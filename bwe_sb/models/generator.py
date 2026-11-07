@@ -173,11 +173,11 @@ class DualStreamBWE(nn.Module):
         else:
             self.pre_m = nn.Conv1d(_n_in_m, dim, pk_m, padding=pk_m // 2)
         self.graft = int(h.get('gen_graft', 0) or 0)
+        self.default_cut_bin = max(4, int(round(
+            (int(getattr(h, "lr_sampling_rate", 2000) or 2000) / 2)
+            / (self.sr / 2) * (n_bins - 1))))
         if self.hf_prior:
             self.sbr_decay = nn.Parameter(torch.zeros(n_bins))
-            self.default_cut_bin = max(4, int(round(
-                (int(getattr(h, "lr_sampling_rate", 2000) or 2000) / 2)
-                / (self.sr / 2) * (n_bins - 1))))
         _nch = {False: 1, True: 3, "only": 2}[self.pha_deriv]
         assert self.pha_mode in ("scratch", "residual", "harmonic"), self.pha_mode
         self.pre_p = nn.Conv1d(n_bins * _nch, dim, pk_p, padding=pk_p // 2)
